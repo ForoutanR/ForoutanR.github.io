@@ -1,0 +1,213 @@
+{{ $author := site.GetPage "authors/admin" }}
+{{ $styles := resources.Get "css/atlas.css" | resources.ToCSS | resources.Fingerprint }}
+{{ $projects := where site.RegularPages "Section" "projects" | sort "Date" "desc" }}
+{{ $featuredProjects := first 3 $projects }}
+{{ $email := "" }}
+{{ range $profile := $author.Params.profiles }}
+  {{- if hasPrefix $profile.url "mailto:" -}}
+    {{- $email = $profile.url -}}
+  {{- end -}}
+{{ end }}
+<!DOCTYPE html>
+<html lang="{{ site.Language.Lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ if site.Title }}{{ site.Title }} — Lively Atlas{{ else }}Alex Johnson — Lively Atlas{{ end }}</title>
+  <link rel="stylesheet" href="{{ $styles.RelPermalink }}" integrity="{{ $styles.Data.Integrity }}">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero__content">
+        <p class="eyebrow">Applied AI Portfolio</p>
+        <h1>{{ with $author.Params.title }}{{ . }}{{ else }}Alex Johnson{{ end }}</h1>
+        <p class="role">{{ $author.Params.role }} · {{ with index $author.Params.organizations 0 }}{{ .name }}{{ end }}</p>
+        <p class="lede">{{ if $author.Content }}{{ $author.Content | plainify }}{{ else }}Building large-scale, responsible AI systems with an eye on real-world impact and ethical guardrails.{{ end }}</p>
+        <div class="hero__cta">
+          {{ if $email }}<a class="button primary" href="{{ $email }}">Get in touch</a>{{ end }}
+          {{ with $author.Params.profiles }}
+            {{ range . }}
+              {{ if eq .icon "brands/linkedin" }}
+                <a class="button ghost" href="{{ .url }}" target="_blank" rel="noreferrer">Connect on LinkedIn</a>
+              {{ end }}
+            {{ end }}
+          {{ end }}
+        </div>
+        <dl class="hero__stats">
+          <div>
+            <dt>Research areas</dt>
+            <dd>{{ delimit $author.Params.interests ", " }}</dd>
+          </div>
+          <div>
+            <dt>Recent focus</dt>
+            <dd>Multimodal foundation models &amp; scalable alignment</dd>
+          </div>
+          <div>
+            <dt>Impact</dt>
+            <dd>Contributions to Llama and open research cited worldwide</dd>
+          </div>
+        </dl>
+      </div>
+      <div class="hero__badge">
+        <div class="badge">
+          <p class="badge__title">Current mission</p>
+          <p class="badge__body">Designing trustworthy AI systems that understand text, vision, and action while staying safe and efficient.</p>
+          <ul class="badge__tags">
+            <li>LLMs</li>
+            <li>Vision</li>
+            <li>Responsible AI</li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <section class="section" id="focus">
+      <div class="section__header">
+        <h2>Focus areas</h2>
+        <p>Where Alex spends most of his research time.</p>
+      </div>
+      <div class="grid grid--three">
+        {{ range $author.Params.interests }}
+          <article class="card">
+            <h3>{{ . }}</h3>
+            <p>{{ if eq . "Large Language Models" }}Building frontier-scale LLMs, optimizing training efficiency, and designing evaluation suites.
+              {{ else if eq . "Computer Vision" }}Teaching models to reason over pixels and text for multimodal understanding.
+              {{ else if eq . "Reinforcement Learning" }}Aligning agent behavior with human feedback for safe decision making.
+              {{ else }}Exploring practical implications and governance for modern AI systems.{{ end }}</p>
+          </article>
+        {{ end }}
+      </div>
+    </section>
+
+    <section class="section" id="projects">
+      <div class="section__header">
+        <h2>Signature work</h2>
+        <p>Selected projects showcasing end-to-end ownership from research to deployment.</p>
+      </div>
+      <div class="grid grid--three">
+        {{ range $featuredProjects }}
+          <article class="card">
+            <div class="card__meta">{{ .Date.Format "Jan 2006" }}</div>
+            <h3>{{ .Title }}</h3>
+            <p>{{ if .Summary }}{{ .Summary | plainify }}{{ else }}{{ .Plain }}{{ end }}</p>
+            {{ with .Params.links }}
+              {{ range . }}
+                <a class="chip" href="{{ .url }}" target="_blank" rel="noreferrer">{{ .type | title }}</a>
+              {{ end }}
+            {{ end }}
+          </article>
+        {{ else }}
+          <article class="card"><h3>Multimodal Alignment</h3><p>Improving language and vision coherence for real-world assistants.</p></article>
+          <article class="card"><h3>Scalable RLHF</h3><p>Reduced human labeling cost 40% with synthetic preference modeling.</p></article>
+          <article class="card"><h3>Trustworthy Evaluation</h3><p>Curated evaluation suites that track robustness and safety regressions.</p></article>
+        {{ end }}
+      </div>
+    </section>
+
+    <section class="section section--split" id="experience">
+      <div>
+        <div class="section__header">
+          <h2>Experience</h2>
+          <p>Leading research programs and shipping models used by millions.</p>
+        </div>
+        <ul class="timeline">
+          {{ range $author.Params.work }}
+            <li class="timeline__item">
+              <div class="timeline__date">{{ .date_start | time.Format "2006" }}{{ if .date_end }} – {{ if eq .date_end "" }}Now{{ else }}{{ .date_end | time.Format "2006" }}{{ end }}{{ else }} – Now{{ end }}</div>
+              <div class="timeline__content">
+                <h3>{{ .position }}</h3>
+                <p class="timeline__org">{{ .company_name }}</p>
+                <p>{{ .summary | plainify }}</p>
+              </div>
+            </li>
+          {{ end }}
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Education</h3>
+        <ul class="list">
+          {{ range $author.Params.education }}
+            <li>
+              <p class="list__title">{{ .area }}</p>
+              <p class="list__meta">{{ .institution }} · {{ .date_start | time.Format "2006" }} – {{ .date_end | time.Format "2006" }}</p>
+              {{ if .summary }}<p>{{ .summary | plainify }}</p>{{ end }}
+            </li>
+          {{ end }}
+        </ul>
+        <h3>Awards</h3>
+        <ul class="list">
+          {{ range $author.Params.awards }}
+            <li>
+              <p class="list__title">{{ .title }}</p>
+              <p class="list__meta">{{ .awarder }} · {{ .date | time.Format "Jan 2006" }}</p>
+              <p>{{ .summary | plainify }}</p>
+            </li>
+          {{ end }}
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" id="skills">
+      <div class="section__header">
+        <h2>Skills &amp; tools</h2>
+        <p>Hands-on practitioner across research, engineering, and productization.</p>
+      </div>
+      <div class="grid grid--two">
+        {{ range $author.Params.skills }}
+          <article class="card">
+            <h3>{{ .name }}</h3>
+            <ul class="skill-list">
+              {{ range .items }}
+                <li>
+                  <span>{{ .name }}</span>
+                  <div class="meter"><span style="width: {{ .percent }}%"></span></div>
+                </li>
+              {{ end }}
+            </ul>
+          </article>
+        {{ end }}
+        <article class="card">
+          <h3>Languages</h3>
+          <ul class="skill-list">
+            {{ range $author.Params.languages }}
+              <li>
+                <span>{{ .name }}</span>
+                <div class="meter"><span style="width: {{ .percent }}%"></span></div>
+              </li>
+            {{ end }}
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section--cta" id="contact">
+      <div class="cta">
+        <div>
+          <p class="eyebrow">Let’s collaborate</p>
+          <h2>Building responsible AI products together</h2>
+          <p>I love partnering with research teams, product leaders, and nonprofits to translate breakthroughs into user impact.</p>
+          <div class="cta__actions">
+            {{ if $email }}<a class="button primary" href="{{ $email }}">Email Alex</a>{{ end }}
+            {{ with $author.Params.profiles }}
+              {{ range . }}
+                {{ if eq .icon "brands/github" }}
+                  <a class="button ghost" href="{{ .url }}" target="_blank" rel="noreferrer">View GitHub</a>
+                {{ end }}
+              {{ end }}
+            {{ end }}
+          </div>
+        </div>
+        <div class="cta__note">
+          <p>Recent wins:</p>
+          <ul>
+            <li>Scaled multimodal model training while reducing inference latency.</li>
+            <li>Co-authored safety evaluation playbook adopted across teams.</li>
+            <li>Mentored junior scientists who went on to publish at NeurIPS.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
